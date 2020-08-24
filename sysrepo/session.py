@@ -244,7 +244,7 @@ class SysrepoSession:
 
         self.subscriptions.append(sub)
 
-    OperDataCallbackType = Callable[[str, Any], Optional[Dict]]
+    OperDataCallbackType = Callable[["SysrepoSession", str, str, "DNode", Any], Optional[Dict]]
     """
     Callback to be called when the operational data are requested.
 

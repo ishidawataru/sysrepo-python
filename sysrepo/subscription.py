@@ -321,11 +321,18 @@ def oper_data_callback(session, module, xpath, req_xpath, req_id, parent, priv):
         callback = subscription.callback
         private_data = subscription.private_data
 
+        ly_ctx = session.get_ly_ctx()
+
+        if parent[0]:
+            dnode = DNode.new(ly_ctx, parent[0]).root()
+        else:
+            dnode = None
+
         if is_async_func(callback):
             task_id = req_id
 
             if task_id not in subscription.tasks:
-                task = subscription.loop.create_task(callback(req_xpath, private_data))
+                task = subscription.loop.create_task(callback(session, xpath, req_xpath, dnode, private_data))
                 task.add_done_callback(
                     functools.partial(subscription.task_done, task_id, "oper")
                 )
@@ -341,7 +348,7 @@ def oper_data_callback(session, module, xpath, req_xpath, req_id, parent, priv):
             oper_data = task.result()
 
         else:
-            oper_data = callback(req_xpath, private_data)
+            oper_data = callback(session, xpath, req_xpath, dnode, private_data)
 
         if isinstance(oper_data, dict):
             # convert oper_data to a libyang.DNode object
@@ -357,6 +364,8 @@ def oper_data_callback(session, module, xpath, req_xpath, req_id, parent, priv):
                     # The FFI bindings of libyang and sysrepo are different.
                     # Casting is required.
                     parent[0] = ffi.cast("struct lyd_node *", dnode.cdata)
+        elif isinstance(oper_data, DNode):
+            pass
         elif oper_data is not None:
             raise TypeError(
                 "bad return type from %s (expected dict or None)" % callback
