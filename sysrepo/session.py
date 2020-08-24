@@ -272,7 +272,8 @@ class SysrepoSession:
         no_thread: bool = False,
         private_data: Any = None,
         asyncio_register: bool = False,
-        strict: bool = False
+        strict: bool = False,
+        oper_merge: bool = False,
     ) -> None:
         """
         Register for providing operational data at the given xpath.
@@ -308,7 +309,7 @@ class SysrepoSession:
 
         if asyncio_register:
             no_thread = True  # we manage our own event loop
-        flags = _subscribe_flags(no_thread=no_thread)
+        flags = _subscribe_flags(no_thread=no_thread, oper_merge=oper_merge)
 
         check_call(
             lib.sr_oper_get_items_subscribe,
@@ -1038,7 +1039,7 @@ def _get_oper_flags(no_state=False, no_config=False, no_subs=False, no_stored=Fa
 
 
 # -------------------------------------------------------------------------------------
-def _subscribe_flags(no_thread=False, passive=False, done_only=False, enabled=False):
+def _subscribe_flags(no_thread=False, passive=False, done_only=False, enabled=False, oper_merge=False):
     flags = 0
     if no_thread:
         flags |= lib.SR_SUBSCR_NO_THREAD
@@ -1048,6 +1049,8 @@ def _subscribe_flags(no_thread=False, passive=False, done_only=False, enabled=Fa
         flags |= lib.SR_SUBSCR_DONE_ONLY
     if enabled:
         flags |= lib.SR_SUBSCR_ENABLED
+    if oper_merge:
+        flags |= lib.SR_SUBSCR_OPER_MERGE
     return flags
 
 

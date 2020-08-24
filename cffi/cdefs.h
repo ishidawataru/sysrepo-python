@@ -180,6 +180,7 @@ typedef enum sr_subscr_flag_e {
 	SR_SUBSCR_ENABLED,
 	SR_SUBSCR_UPDATE,
 	SR_SUBSCR_UNLOCKED,
+	SR_SUBSCR_OPER_MERGE,
 	...
 } sr_subscr_flag_t;
 
